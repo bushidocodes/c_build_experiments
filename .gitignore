@@ -2,3 +2,5 @@
 *.i
 *.o
 hello
+libgreet.so
+libgreet.a
