@@ -1,6 +1,12 @@
-OBJS = greet/count.o greet/greet.o hello.o
+CC = clang
+AS = as     # Native Assembler
+AR = ar		# Native Archive Tool
 
+APP_OBJS = hello.o
 LIB_OBJS = greet/count.o greet/greet.o
+OBJS = $(APP_OBJS) $(LIB_OBJS)
+
+# Used for LLVM Bitcode libraries
 LIB_BC_OBJS = greet/count.bc greet/greet.bc
 
 all: link
@@ -10,11 +16,11 @@ clean:
 
 .PRECIOUS: %.i 
 %.i: %.c
-	clang -E -o $@ $<
+	$(CC) -E -o $@ $<
 
 .PRECIOUS: %.ll 
 %.ll: %.i
-	clang -S -emit-llvm -o $@ $<
+	$(CC) -S -emit-llvm -o $@ $<
 
 # Generate llvm bitcode from the text representation
 .PRECIOUS: %.bc
@@ -29,18 +35,18 @@ clean:
 # Assemble into native object file
 .PRECIOUS: %.o 
 %.o: %.S
-	as -o $@ $< 
+	$(AS) -o $@ $< 
 
 link: $(OBJS)
-	clang -o hello $^
+	$(CC) -o hello $^
 
 # LLVM Bitcode Library as bitcode *.bc file
 # LLVM bitcode of different translation units can be linked together into a single *.bc file
 libgreet.bc: $(LIB_BC_OBJS)
 	llvm-link -o libgreet.bc $^
 
-link_libgreet_bc_direct: hello.bc libgreet.bc
-	clang -o hello $^
+link_libgreet_bc_direct: $(APP_OBJS) libgreet.bc
+	$(CC) -o hello $^
 
 # LLVM Bitcode Library as Archive
 # LLVM is able to generate and use archives that contains LLVM bitcode
@@ -52,35 +58,35 @@ libgreetbc.a: $(LIB_BC_OBJS)
 	llvm-ar rcs libgreetbc.a $^
 
 link_libgreetbc_a_direct: hello.bc libgreetbc.a
-	clang -fuse-ld=lld -o hello hello.bc libgreetbc.a
+	$(CC) -fuse-ld=lld -o hello $^
 
 link_libgreetbc_a_indirect: hello.bc libgreetbc.a
-	LIBRARY_PATH=. clang -v -fuse-ld=lld -o hello hello.bc -lgreetbc
+	$(CC) -L. -fuse-ld=lld -o hello hello.bc -lgreetbc
 
 # Static Archive Rules
 # These demonstrate how to create a static archive from *.o object files
 # And how to either directly or indirectly link the static archive
 
 libgreet.a: $(LIB_OBJS)
-	ar rcs libgreet.a $^
+	$(AR) rcs libgreet.a $^
 
 # The archive has to come last
-link_libgreet_a_direct: hello.o libgreet.a
-	clang -o hello $^
+link_libgreet_a_direct: $(APP_OBJS) libgreet.a
+	$(CC) -o hello $^
 
 # We set the LIBRARY_PATH environment variable so -lgreet finds ./libgreet.a
-link_libgreet_a_indirect: hello.o libgreet.a
-	LIBRARY_PATH=. clang -o hello hello.o -lgreet
+link_libgreet_a_indirect: $(APP_OBJS) libgreet.a
+	$(CC) -L. -o hello $(APP_OBJS) -lgreet
 
 # Dynamic Archive Rules
 # These demonstrate how to create a shared library from *.o object files
 # And how to either directly or indirectly link the static archive
 
 libgreet.so: $(LIB_OBJS)
-	clang -shared -fPIC -o libgreet.so $^
+	$(CC) -shared -fPIC -o libgreet.so $^
 
-link_libgreet_so: hello.o libgreet.so
-	clang -L. -o hello hello.o -lgreet
+link_libgreet_so: $(APP_OBJS) libgreet.so
+	$(CC) -L. -o hello $(APP_OBJS) -lgreet
 
 # Example of running the resulting binary. We need to set LD_LIBRARY_PATH to the directory of libgreet.so
 hello_so: link_libgreet_so
