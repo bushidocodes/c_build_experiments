@@ -1,20 +1,9 @@
 WASI_SDK_PATH=./wasi-sdk-12.0
 CC=$(WASI_SDK_PATH)/bin/clang --sysroot=$(WASI_SDK_PATH)/share/wasi-sysroot
 AR=$(WASI_SDK_PATH)/bin/llvm-ar
-
-OBJS = greet/count.o greet/greet.o hello.o
-
-LIB_OBJS = greet/count.o greet/greet.o
 LIB_BC_OBJS = greet/count.bc greet/greet.bc
 
-all: link
-
-clean:
-	rm -rf *.i *.S *.ll *.o *.bc *.a *.so *.wasm **/*.i **/*.S **/*.o **/*.ll **/*.bc **/*.bca
-
-.PRECIOUS: %.i 
-%.i: %.c
-	$(CC) -E -o $@ $<
+include common.mk
 
 .PRECIOUS: %.ll 
 %.ll: %.i
