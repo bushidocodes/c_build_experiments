@@ -12,13 +12,20 @@ All rules should be run with `-r` to ignore the Make's built-in rules and force 
 
 Also be sure to run `make clean` between jobs to purge all intermediate output.
 
-The default `Makefile` uses gcc and is configured to use separate preprocess, compile, assemble, and link steps, keeping all intermediate assets to allow for inspection using various tools. It also includes rules to demonstrate the creation and use of static libraries (`*.a` archives) and dynamic libraries (`*.so`). This is a good baseline for understanding the traditional UNIX compiler toolchain.
+The default `Makefile` uses `gcc.mk`.
 
-`MakefileClang` adds LLVM-specific build steps that generate LLVM's intermediate representation in text *.ll and binary *.bc forms. It also provides rules to show how to build static LLVM bitcode libraries using two alternate techniques. The first combines all translation units into a single `*.bc` file. The second creates an LLVM bitcode archive that can be linked directly or indirectly just as with archives containing native ELF object files.
+`gcc.mk` uses gcc and is configured to use separate preprocess, compile, assemble, and link steps, keeping all intermediate assets to allow for inspection using various tools. It also includes rules to demonstrate the creation and use of static libraries (`*.a` archives) and dynamic libraries (`*.so`). This is a good baseline for understanding the traditional UNIX compiler toolchain.
 
-`MakefileWasm` uses LLVM to generate WebAssembly modules using WASI. The `install_wasi_sdk.sh` script should be executed before running these rules. The rules demonstrates use of LLVM library using `*.bc` files and LLVM Bitcode Archives.
+`clang.mk` adds LLVM-specific build steps that generate LLVM's intermediate representation in text *.ll and binary *.bc forms. It also provides rules to show how to build static LLVM bitcode libraries using two alternate techniques. The first combines all translation units into a single `*.bc` file. The second creates an LLVM bitcode archive that can be linked directly or indirectly just as with archives containing native ELF object files.
+
+`wasm.mk` uses LLVM to generate WebAssembly modules using WASI. The `install_wasi_sdk.sh` script should be executed before running these rules. The rules demonstrates use of LLVM library using `*.bc` files and LLVM Bitcode Archives.
 
 The resulting WebAsssembly module was run against [wasmtime](https://github.com/bytecodealliance/wasmtime)
+
+Example:
+```
+make clean && make -r -f wasm.mk link && wasmtime hello.wasm -- Sean
+```
 
 ## Tools to inspect various intermediate files
 - `ldd` can look at shared libraries needed at runtime
