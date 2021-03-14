@@ -5,7 +5,7 @@ LIB_OBJS = greet/count.o greet/greet.o
 all: link
 
 clean:
-	rm -rf *.i *.S *.o **/*.i **/*.S **/*.o hello libgreet.a libgreet.so
+	rm -rf *.i *.S *.ll *.o *.bc *.a *.so *.wasm **/*.i **/*.S **/*.o **/*.ll **/*.bc **/*.bca
 
 .PRECIOUS: %.i 
 %.i: %.c

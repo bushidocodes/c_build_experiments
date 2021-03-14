@@ -2,5 +2,10 @@
 *.i
 *.o
 hello
-libgreet.so
-libgreet.a
+*.so
+*.a
+*.wasm
+*.tar.gz
+wasi-sdk-*/
+*.bc
+*.ll
